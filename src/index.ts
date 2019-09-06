@@ -2,9 +2,15 @@ import { sync as glob } from 'glob'
 import { gen, Target, NamedValue } from 'typei18n'
 import * as fs from 'fs'
 import * as path from 'path'
-import Compiler from 'webpack/lib/Compiler'
-import Compilation from 'webpack/lib/Compilation'
-import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin'
+import * as webpack from 'webpack'
+
+declare module 'webpack' {
+  namespace compilation {
+    interface Compilation {
+      createChildCompiler(name: string, options: webpack.Configuration['output']): any
+    }
+  }
+}
 
 interface Options {
   context: string
@@ -15,6 +21,7 @@ const DEFAULT_OPTIONS: Options = {
 }
 
 export default class I18nPlugin {
+  private name: string = this.constructor.name
   context: Options['context']
   
   constructor(public options: Partial<Options> = {}) {
@@ -22,7 +29,7 @@ export default class I18nPlugin {
     this.context = context
   }
 
-  public apply(compiler: Compiler) {
+  public apply(compiler: webpack.Compiler) {
     const context = this.resolveContext(compiler)
     const filePath = this.resolveBundleFile(context)
     const locales = this.resolveLocaleFiles(context)
@@ -31,12 +38,12 @@ export default class I18nPlugin {
       filename: `[name].lang.json`
     }
 
-    compiler.hooks.make.tapAsync(`TypeI18nWebpackPlugin`, (compilation: Compilation, cb: (err: any) => void) => {
+    compiler.hooks.make.tapAsync(this.name, (compilation: webpack.compilation.Compilation, cb: (err: any) => void) => {
       const childCompiler = compilation.createChildCompiler(`typei18n-webpack-plugin`, outputOptions)
       childCompiler.context = compiler.context      
           
       locales.forEach(locale => {
-        new SingleEntryPlugin(
+        new webpack.SingleEntryPlugin(
           compiler.context, 
           `${locale}`, 
           path.basename(locale, path.extname(locale))
@@ -44,7 +51,7 @@ export default class I18nPlugin {
       })
 
       /**@todo HMR */
-      childCompiler.hooks.compilation.tap('TypeI18nWebpackPlugin', (compilation: Compilation) => {
+      childCompiler.hooks.compilation.tap(this.name, (compilation: webpack.compilation.Compilation) => {
         if (compilation.cache) {
           if (!compilation.cache[name]) {
             compilation.cache[name] = {}
@@ -56,7 +63,7 @@ export default class I18nPlugin {
       childCompiler.runAsChild(cb)
     })
 
-    compiler.hooks.emit.tap(`TypeI18nWebpackPlugin`, (compilation: Compilation) => {
+    compiler.hooks.emit.tap(this.name, (compilation: webpack.compilation.Compilation) => {
       const acc: NamedValue<any>[] = []
 
       Object.keys(compilation.assets).forEach(assetName => {
@@ -78,7 +85,7 @@ export default class I18nPlugin {
     })
   }
 
-  private resolveContext(compiler: Compiler): string {
+  private resolveContext(compiler: webpack.Compiler): string {
     return path.isAbsolute(this.context) 
       ? this.context 
       : path.resolve((compiler as any).context, this.context)
