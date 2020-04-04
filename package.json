@@ -21,18 +21,20 @@
   "homepage": "https://github.com/HearTao/typei18n-webpack-plugin#readme",
   "devDependencies": {
     "@types/glob": "^7.1.1",
-    "@types/node": "^11.13.20",
-    "@types/webpack": "^4.39.1",
-    "typescript": "^3.6.2",
-    "webpack": "^4.39.3",
-    "webpack-cli": "^3.3.8"
+    "@types/js-yaml": "^3.12.3",
+    "@types/node": "^11.15.9",
+    "@types/webpack": "^4.41.10",
+    "typei18n": "^1.0.6",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "glob": "^7.1.4",
-    "typei18n": "^1.0.6"
+    "glob": "^7.1.6",
+    "js-yaml": "^3.13.1"
   },
   "peerDependencies": {
     "webpack": "*",
-    "typescript": "*"
+    "typei18n": "*"
   }
 }
