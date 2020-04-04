@@ -3,10 +3,15 @@
   "version": "0.0.1",
   "description": "webpack plugin for type18n",
   "main": "index.js",
+  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HearTao/typei18n-webpack-plugin.git"
   },
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
   "scripts": {
     "start": "tsc -w",
     "build": "tsc",
